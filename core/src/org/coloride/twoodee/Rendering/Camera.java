@@ -24,10 +24,8 @@ public class Camera {
     }
 
     public static Vector2 getCursorPositionInSpace() {
-        return new Vector2(
-            Camera.camera.position.x - Camera.camera.viewportWidth/2 + Gdx.input.getX(),
-            Camera.camera.position.y + Camera.camera.viewportHeight/2 - Gdx.input.getY()
-        );
+        Vector3 unprojectedCoordinates = Camera.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        return new Vector2(unprojectedCoordinates.x, unprojectedCoordinates.y);
     }
 
     public static void create() {

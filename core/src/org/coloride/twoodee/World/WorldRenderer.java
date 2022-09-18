@@ -1,40 +1,29 @@
 package org.coloride.twoodee.World;
 
-import box2dLight.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
-import jdk.nashorn.internal.runtime.Debug;
-import org.coloride.twoodee.Rendering.BatchRenderer;
 import org.coloride.twoodee.Rendering.Camera;
-import org.coloride.twoodee.UI.DebugUI;
 import org.coloride.twoodee.Utilities.ColorUtilities;
 import org.coloride.twoodee.Utilities.MathUtilities;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
 
 import static org.coloride.twoodee.Rendering.BatchRenderer.tilesBatch;
-import static org.coloride.twoodee.Rendering.BatchRenderer.uiBatch;
+import static org.coloride.twoodee.World.AutoTiling.autoTileBuffer;
 
 public class WorldRenderer extends Thread {
     public static HashMap<Integer, Texture> tilesTextures = new HashMap<>();
     public static ArrayList<WorldTile> renderedTilesBuffer = new ArrayList();
+    private static Thread autoTilingThread = new AutoTiling();
     private static Thread lightProcessingThread = new TileLighting();
     private static Thread tilesProcessingThread = new WorldRenderer();
 
@@ -113,7 +102,7 @@ public class WorldRenderer extends Thread {
                             boolean lightActive = false;
 
                             if (blockVisible) {
-                                //AutoTiling.processAutoTile(tile);
+                                AutoTiling.addTileToAutoTileBuffer(tile);
 
                                 if (lightingType == LightingType.FUTURE) {
                                     if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
@@ -248,6 +237,7 @@ public class WorldRenderer extends Thread {
             if (TileLighting.chunkRefreshBuffer.size() > 0 && !TileLighting.rendering) { lightProcessingThread.run(); }
         }
         if (needsTileProcessing) { tilesProcessingThread.run(); }
+        if (autoTileBuffer.size() > 0) { autoTilingThread.run(); }
     }
     public static void draw() {
 
@@ -262,10 +252,6 @@ public class WorldRenderer extends Thread {
             for (int i = 0; i < renderedTilesBuffer.size(); i++) {
                 WorldTile tile = renderedTilesBuffer.get(i);
                 Chunk chunk = tile.getChunk();
-
-                //tile.getTileLight().setDistance(); todo
-
-                AutoTiling.processAutoTile(tile);
 
                 Sprite sprite = new Sprite(AutoTiling.getTextureRegionFromWorldTile(getRegionFromTexture(getTileTexture(tile.getTileId())), tile));
                 sprite.setPosition(chunk.getChunkPosition().x * Chunk.chunkSize.x + tile.getTilePosition().x * WorldTile.tileSize.x, chunk.getChunkPosition().y * Chunk.chunkSize.y + tile.getTilePosition().y * WorldTile.tileSize.y);

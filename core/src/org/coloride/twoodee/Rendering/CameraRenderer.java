@@ -20,7 +20,7 @@ public class CameraRenderer {
                 Camera.camera.update();
             case DRAGGABLE:
                 if (Gdx.input.isTouched()) {
-                    Camera.camera.translate(-Gdx.input.getDeltaX(), Gdx.input.getDeltaY());
+                    Camera.camera.translate(-Gdx.input.getDeltaX()*Camera.cameraZoomFactor, Gdx.input.getDeltaY()*Camera.cameraZoomFactor);
                 }
             case FOLLOW_STATIC:
                 Camera.camera.translate(cameraPosition);
