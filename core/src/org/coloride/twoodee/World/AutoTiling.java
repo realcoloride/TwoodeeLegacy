@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.box2d.World;
@@ -13,6 +14,7 @@ import org.coloride.twoodee.Utilities.MathUtilities;
 import java.util.HashMap;
 
 import static org.coloride.twoodee.Rendering.BatchRenderer.tilesBatch;
+import static org.coloride.twoodee.World.WorldRenderer.*;
 
 public class AutoTiling extends Thread {
     public static int northOrientation = 1;
@@ -23,7 +25,7 @@ public class AutoTiling extends Thread {
     public void run() {
         try {
             // Chunk rendering
-            Vector2 chunkPosition;
+            /*Vector2 chunkPosition;
             BoundingBox chunkBounds;
             Vector2 tilePosition;
             Vector2 tileSpacePosition = new Vector2();
@@ -32,44 +34,66 @@ public class AutoTiling extends Thread {
             boolean chunkVisible;
             WorldTile tile;
 
-            MapInformation.MapSize mapSize = MapInformation.getLoadedMap().mapSize;
+            Vector2 normalizedMapSize = MapInformation.mapSizes.get(MapInformation.getLoadedMap().getMapSize());
 
-            for (Chunk chunk : MapInformation.getLoadedMap().getChunks().values()) {
-                chunkPosition = chunk.getChunkPosition();
+            float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
+            float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
 
-                chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                        chunkPosition.x * Chunk.chunkSize.x,
-                        chunkPosition.y * Chunk.chunkSize.y,
-                        chunkPosition.x * Chunk.chunkSize.x + Chunk.chunkSize.x,
-                        chunkPosition.y * Chunk.chunkSize.y + Chunk.chunkSize.y
-                );
+            int minChunkX = MathUtils.floor(cameraPositionX/Chunk.chunkSize.x); // drawing anchor point (x)
+            int minChunkY = MathUtils.floor(cameraPositionY/Chunk.chunkSize.y); // drawing anchor point (y)
+            int maxChunkX = MathUtils.ceil(Camera.camera.viewportWidth/Chunk.chunkSize.x + 0.5f); // chunk render amount (x)
+            int maxChunkY = MathUtils.ceil(Camera.camera.viewportHeight/Chunk.chunkSize.y + 0.5f); // chunk render amount (y)
 
-                chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
+            for (int cx = minChunkX; cx < MathUtils.clamp(minChunkX + maxChunkX, 0, normalizedMapSize.x); cx++) {
+                for (int cy = minChunkY; cy < MathUtils.clamp(minChunkY + maxChunkY, 0, normalizedMapSize.y); cy++) {
 
-                if (chunkVisible) {
-                    for (int x = 0; x < Chunk.chunkSize.x / WorldTile.tileSize.x; x++) {
-                        for (int y = 0; y < Chunk.chunkSize.y / WorldTile.tileSize.y; y++) {
-                            tilePosition = new Vector2(x,y);
-                            tileSpacePosition.set(chunk.getChunkPosition().x * Chunk.chunkSize.x + x * WorldTile.tileSize.x, chunk.getChunkPosition().y * Chunk.chunkSize.y + y * WorldTile.tileSize.y);
+                    // if its below 0, put it back to 0 (avoid crash)
+                    cx = cx < 0 ? 0 : cx;
+                    cy = cy < 0 ? 0 : cy;
 
-                            blockBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                                    tileSpacePosition.x,
-                                    tileSpacePosition.y,
-                                    tileSpacePosition.x + WorldTile.tileSize.x,
-                                    tileSpacePosition.y + WorldTile.tileSize.y
-                            );
+                    chunkPosition = chunk.getChunkPosition();
 
-                            blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
+                    chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                            chunkPosition.x * Chunk.chunkSize.x,
+                            chunkPosition.y * Chunk.chunkSize.y,
+                            chunkPosition.x * Chunk.chunkSize.x + Chunk.chunkSize.x,
+                            chunkPosition.y * Chunk.chunkSize.y + Chunk.chunkSize.y
+                    );
 
-                            if (blockVisible) {
-                                tile = chunk.getTileFromChunk(tilePosition);
-                                AutoTiling.processAutoTile(tile);
+                    chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
+
+                    if (chunkVisible) {
+                        for (int x = 0; x < Chunk.chunkSize.x / WorldTile.tileSize.x; x++) {
+                            for (int y = 0; y < Chunk.chunkSize.y / WorldTile.tileSize.y; y++) {
+                                tilePosition = new Vector2(x,y);
+                                tileSpacePosition.set(chunk.getChunkPosition().x * Chunk.chunkSize.x + x * WorldTile.tileSize.x, chunk.getChunkPosition().y * Chunk.chunkSize.y + y * WorldTile.tileSize.y);
+
+                                blockBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                                        tileSpacePosition.x,
+                                        tileSpacePosition.y,
+                                        tileSpacePosition.x + WorldTile.tileSize.x,
+                                        tileSpacePosition.y + WorldTile.tileSize.y
+                                );
+
+                                blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
+
+                                if (blockVisible) {
+                                    tile = chunk.getTileFromChunk(tilePosition);
+                                    AutoTiling.processAutoTile(tile);
+                                }
                             }
                         }
                     }
                 }
-            }
+            }*/
 
+            // Chunk rendering
+            if (renderedTilesBuffer.size() > 0) {
+                for (int i = 0; i < renderedTilesBuffer.size(); i++) {
+                    WorldTile tile = renderedTilesBuffer.get(i);
+                    processAutoTile(tile);
+                }
+            }
         } catch (Exception e) {
 
         }
@@ -97,11 +121,16 @@ public class AutoTiling extends Thread {
 
     public static void processAutoTile(WorldTile tile) {
         if (tile.needsTileOrientationRefreshing()) {
+            Vector2 direction = new Vector2(0,1);
 
-            NeighbourTile neighbourNorthTile = WorldTile.getBlockNeighbourTile(tile, new Vector2(0, 1));
-            NeighbourTile neighbourEastTile  = WorldTile.getBlockNeighbourTile(tile, new Vector2(-1,0));
-            NeighbourTile neighbourSouthTile = WorldTile.getBlockNeighbourTile(tile, new Vector2(0,-1));
-            NeighbourTile neighbourWestTile  = WorldTile.getBlockNeighbourTile(tile, new Vector2(1,0));
+            direction.set(0,1);
+            NeighbourTile neighbourNorthTile = WorldTile.getBlockNeighbourTile(tile, direction);
+            direction.set(-1,0);
+            NeighbourTile neighbourEastTile  = WorldTile.getBlockNeighbourTile(tile, direction);
+            direction.set(0,-1);
+            NeighbourTile neighbourSouthTile = WorldTile.getBlockNeighbourTile(tile, direction);
+            direction.set(1,0);
+            NeighbourTile neighbourWestTile  = WorldTile.getBlockNeighbourTile(tile, direction);
 
             int orientation = 0;
 

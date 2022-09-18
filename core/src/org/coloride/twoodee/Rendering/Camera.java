@@ -32,15 +32,16 @@ public class Camera {
 
     public static void create() {
         camera = new OrthographicCamera();
-
         camera.setToOrtho(false, 1280, 720);
         camera.update();
     }
 
     public static void draw() {
-        camera.zoom = MathUtils.clamp(cameraZoomFactor,
+        cameraZoomFactor = MathUtils.clamp(cameraZoomFactor,
                 cameraMinZoomFactor, cameraMaxZoomFactor
         );
+
+        camera.zoom = cameraZoomFactor;
 
         CameraRenderer.draw();
         camera.update();

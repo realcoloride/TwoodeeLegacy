@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -23,6 +24,7 @@ import org.coloride.twoodee.UI.DebugUI;
 import org.coloride.twoodee.Utilities.ColorUtilities;
 import org.coloride.twoodee.Utilities.MathUtilities;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
@@ -37,13 +39,13 @@ public class WorldRenderer extends Thread {
     private static Thread tilesProcessingThread = new WorldRenderer();
 
     public static ShapeRenderer shapeRenderer = new ShapeRenderer();
-    public static LightingType lightingType = LightingType.MODERN;  //todo: fully operational (needs MODERN)
+    public static LightingType lightingType = LightingType.FULL_BRIGHT;  //todo: fully operational (needs MODERN)
 
     public static boolean needsTileProcessing = true;
 
     public void run() {
         // Chunk rendering
-        Vector2 chunkPosition;
+        Vector2 chunkPosition = new Vector2();
         BoundingBox chunkBounds;
         Vector2 tilePosition;
         Vector2 tileSpacePosition = new Vector2();
@@ -52,57 +54,81 @@ public class WorldRenderer extends Thread {
         boolean chunkVisible;
         WorldTile tile;
 
-        // todo: put rendered chunks buffering in process() and render in draw()
+        Vector2 normalizedMapSize = MapInformation.mapSizes.get(MapInformation.getLoadedMap().getMapSize());
 
-        MapInformation.MapSize mapSize = MapInformation.getLoadedMap().mapSize;
+        float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
+        float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
 
-        // todo: get all chunks in the viewport idea instead of iterating all chunks
+        int minChunkX = MathUtils.floor(cameraPositionX/Chunk.chunkSize.x); // drawing anchor point (x)
+        int minChunkY = MathUtils.floor(cameraPositionY/Chunk.chunkSize.y); // drawing anchor point (y)
+        int maxChunkX = MathUtils.ceil(Camera.camera.viewportWidth/Chunk.chunkSize.x + 0.5f); // chunk render amount (x)
+        int maxChunkY = MathUtils.ceil(Camera.camera.viewportHeight/Chunk.chunkSize.y + 0.5f); // chunk render amount (y)
 
-        for (Chunk chunk : MapInformation.getLoadedMap().getChunks().values()) {
-            chunkPosition = chunk.getChunkPosition();
+        for (int cx = minChunkX; cx < MathUtils.clamp(minChunkX + maxChunkX, 0, normalizedMapSize.x); cx++) {
+            for (int cy = minChunkY; cy < MathUtils.clamp(minChunkY + maxChunkY, 0, normalizedMapSize.y); cy++) {
 
-            chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                    chunkPosition.x * Chunk.chunkSize.x,
-                    chunkPosition.y * Chunk.chunkSize.y,
-                    chunkPosition.x * Chunk.chunkSize.x + Chunk.chunkSize.x,
-                    chunkPosition.y * Chunk.chunkSize.y + Chunk.chunkSize.y
-            );
+                // if its below 0, put it back to 0 (avoid crash)
+                cx = cx < 0 ? 0 : cx;
+                cy = cy < 0 ? 0 : cy;
 
-            chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
+                chunkPosition.set(cx,cy);
+                Chunk chunk = MapInformation.getLoadedMap().getChunks().get(chunkPosition);
 
-            if (chunkVisible) {
-                TileLighting.chunkRefreshBuffer.add(chunk);
-                for (int x = 0; x < Chunk.chunkSize.x / WorldTile.tileSize.x; x++) {
-                    for (int y = 0; y < Chunk.chunkSize.y / WorldTile.tileSize.y; y++) {
-                        tilePosition = new Vector2(x, y);
-                        tileSpacePosition.set(chunk.getChunkPosition().x * Chunk.chunkSize.x + x * WorldTile.tileSize.x, chunk.getChunkPosition().y * Chunk.chunkSize.y + y * WorldTile.tileSize.y);
+                chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                        cx * Chunk.chunkSize.x,
+                        cy * Chunk.chunkSize.y,
+                        cx * Chunk.chunkSize.x + Chunk.chunkSize.x,
+                        cy * Chunk.chunkSize.y + Chunk.chunkSize.y
+                );
+                chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
 
-                        blockBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                                tileSpacePosition.x,
-                                tileSpacePosition.y,
-                                tileSpacePosition.x + WorldTile.tileSize.x,
-                                tileSpacePosition.y + WorldTile.tileSize.y
-                        );
+                if (chunkVisible) {
+                    //System.out.println(chunkPosition);
+                    if (lightingType == LightingType.SPIKE)
+                        TileLighting.chunkRefreshBuffer.add(chunk);
+                    int minTileX = MathUtils.floor(cameraPositionX/WorldTile.tileSize.x); // drawing anchor point (x)
+                    int minTileY = MathUtils.floor(cameraPositionY/WorldTile.tileSize.y); // drawing anchor point (y)
+                    int maxTileX = MathUtils.ceil(Camera.camera.viewportWidth/WorldTile.tileSize.x); // tile render amount (x)
+                    int maxTileY = MathUtils.ceil(Camera.camera.viewportHeight/WorldTile.tileSize.y); // tile render amount (y)
 
-                        blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
-                        tile = chunk.getTileFromChunk(tilePosition);
-                        tile.getTileLight().setActive(false);
+                    for (int x = 0; x < MathUtils.clamp(minTileX + maxTileX, 0, Chunk.chunkSize.x / WorldTile.tileSize.x); x++) {
+                        for (int y = 0; y < MathUtils.clamp(minTileY + maxTileY, 0, Chunk.chunkSize.y / WorldTile.tileSize.y); y++) {
 
-                        if (blockVisible) {
-                            AutoTiling.processAutoTile(tile);
+                            // if its below 0, put it back to 0 (avoid crash)
+                            x = x < 0 ? 0 : x;
+                            y = y < 0 ? 0 : y;
 
-                            if (lightingType == LightingType.FUTURE) {
-                                if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
-                                    tile.getTileLight().setColor(TileType.getTileTypeById(tile.getTileId()).getLightColor());
-                                    tile.getTileLight().setDistance(TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4);
-                                    tile.getTileLight().setPosition(tileSpacePosition.x+WorldTile.tileSize.x/2,tileSpacePosition.y+WorldTile.tileSize.y/2);
-                                    tile.getTileLight().setActive(true);
+                            tilePosition = new Vector2(x, y);
+                            tileSpacePosition.set(cx * Chunk.chunkSize.x + x * WorldTile.tileSize.x, cy * Chunk.chunkSize.y + y * WorldTile.tileSize.y);
+
+                            blockBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                                    tileSpacePosition.x,
+                                    tileSpacePosition.y,
+                                    tileSpacePosition.x + WorldTile.tileSize.x,
+                                    tileSpacePosition.y + WorldTile.tileSize.y
+                            );
+                            blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
+
+                            tile = chunk.getTileFromChunk(tilePosition);
+                            boolean lightActive = false;
+
+                            if (blockVisible) {
+                                AutoTiling.processAutoTile(tile);
+
+                                if (lightingType == LightingType.FUTURE) {
+                                    if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
+                                        tile.getTileLight().setColor(TileType.getTileTypeById(tile.getTileId()).getLightColor());
+                                        tile.getTileLight().setDistance(TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4);
+                                        tile.getTileLight().setPosition(tileSpacePosition.x+WorldTile.tileSize.x/2,tileSpacePosition.y+WorldTile.tileSize.y/2);
+                                        lightActive = true;
+                                    }
+                                }
+
+                                if (tile.getTileId() != 0) { // AIR
+                                    renderedTilesBuffer.add(tile);
                                 }
                             }
-
-                            if (tile.getTileId() != 0) { // AIR
-                                renderedTilesBuffer.add(tile);
-                            }
+                            tile.getTileLight().setActive(lightActive);
                         }
                     }
                 }
@@ -130,28 +156,55 @@ public class WorldRenderer extends Thread {
     }
 
     public static Chunk getChunkFromSpacePosition(Vector2 spacePosition) {
-        for (Chunk chunk : MapInformation.getLoadedMap().getChunks().values()) {
-            Vector2 chunkPosition = chunk.getChunkPosition();
+        float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
+        float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
 
-            BoundingBox chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                    chunkPosition.x * Chunk.chunkSize.x,
-                    chunkPosition.y * Chunk.chunkSize.y,
-                    chunkPosition.x * Chunk.chunkSize.x + Chunk.chunkSize.x,
-                    chunkPosition.y * Chunk.chunkSize.y + Chunk.chunkSize.y
-            );
+        int minChunkX = MathUtils.floor(cameraPositionX/Chunk.chunkSize.x); // drawing anchor point (x)
+        int minChunkY = MathUtils.floor(cameraPositionY/Chunk.chunkSize.y); // drawing anchor point (y)
+        int maxChunkX = MathUtils.ceil(Camera.camera.viewportWidth/Chunk.chunkSize.x + 0.5f); // chunk render amount (x)
+        int maxChunkY = MathUtils.ceil(Camera.camera.viewportHeight/Chunk.chunkSize.y + 0.5f); // chunk render amount (y)
 
-            boolean isInChunk = (chunkBounds.contains(MathUtilities.Conversion.vector2dTo3d(spacePosition)));
-            if (isInChunk) { // ignore if null
-                return chunk;
+        Vector2 normalizedMapSize = MapInformation.mapSizes.get(MapInformation.getLoadedMap().getMapSize());
+
+        for (int cx = minChunkX; cx < MathUtils.clamp(minChunkX + maxChunkX, 0, normalizedMapSize.x); cx++) {
+            for (int cy = minChunkY; cy < MathUtils.clamp(minChunkY + maxChunkY, 0, normalizedMapSize.y); cy++) {
+
+                // if its below 0, put it back to 0 (avoid crash)
+                cx = cx < 0 ? 0 : cx;
+                cy = cy < 0 ? 0 : cy;
+
+                Chunk chunk = MapInformation.getLoadedMap().getChunks().get(new Vector2(cx,cy));
+                Vector2 chunkPosition = chunk.getChunkPosition();
+
+                BoundingBox chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                        chunkPosition.x * Chunk.chunkSize.x,
+                        chunkPosition.y * Chunk.chunkSize.y,
+                        chunkPosition.x * Chunk.chunkSize.x + Chunk.chunkSize.x,
+                        chunkPosition.y * Chunk.chunkSize.y + Chunk.chunkSize.y
+                );
+
+                boolean isInChunk = (chunkBounds.contains(MathUtilities.Conversion.vector2dTo3d(spacePosition)));
+                if (isInChunk) { // ignore if null
+                    return chunk;
+                }
             }
         }
         return null;
     }
     public static WorldTile getTileFromChunkSpacePosition(Chunk chunk, Vector2 spacePosition) {
         if (chunk != null) {
-            // todo: get only in viewport area
-            for (int x = 0; x < Chunk.chunkSize.x / WorldTile.tileSize.x; x++) {
-                for (int y = 0; y < Chunk.chunkSize.y / WorldTile.tileSize.y; y++) {
+            float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
+            float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
+
+            int minTileX = MathUtils.floor(cameraPositionX/WorldTile.tileSize.x); // drawing anchor point (x)
+            int minTileY = MathUtils.floor(cameraPositionY/WorldTile.tileSize.y); // drawing anchor point (y)
+            int maxTileX = MathUtils.ceil(Camera.camera.viewportWidth/WorldTile.tileSize.x); // tile render amount (x)
+            int maxTileY = MathUtils.ceil(Camera.camera.viewportHeight/WorldTile.tileSize.y); // tile render amount (y)
+
+            //System.out.println(minTileX + " - " + minTileY + " - " + maxTileX + " - " + maxTileY);
+
+            for (int x = 0; x < MathUtils.clamp(minTileX + maxTileX, 0, Chunk.chunkSize.x / WorldTile.tileSize.x); x++) {
+                for (int y = 0; y < MathUtils.clamp(minTileY + maxTileY, 0, Chunk.chunkSize.y / WorldTile.tileSize.y); y++) {
                     BoundingBox tileBounds = MathUtilities.Conversion.boundingBox2dTo3d(
                             chunk.getChunkPosition().x * Chunk.chunkSize.x + x * WorldTile.tileSize.x,
                             chunk.getChunkPosition().y * Chunk.chunkSize.y + y * WorldTile.tileSize.y,
@@ -177,7 +230,7 @@ public class WorldRenderer extends Thread {
         if (WorldRenderer.lightingType == LightingType.SPIKE) {
             Color color = new Color();
 
-            Integer lightIntensity = tile.getlightIntensity();
+            Integer lightIntensity = tile.getlightIntensity() != null ? tile.getlightIntensity() : TileType.getTileTypeById(tile.getTileId()).getLightInfluence();
 
             color.r = (float) lightIntensity * 1 / 16;
             color.g = (float) lightIntensity * 1 / 16;

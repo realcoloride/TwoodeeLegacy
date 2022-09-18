@@ -16,7 +16,7 @@ public class WorldTile {
     public Chunk chunk;
     public Vector2 tilePosition;
     public Integer lightIntensity = null; // Needs rendering
-    public int tileOrientation;
+    public int tileOrientation = 0;
     public boolean needsTileOrientationRefreshing = true;
     public boolean overrideTileOrientation = false;
 

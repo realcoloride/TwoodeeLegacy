@@ -1,6 +1,7 @@
 package org.coloride.twoodee.UI;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -23,10 +24,22 @@ public class DebugUI {
     public static int workload = 0;
 
     public static void process() {
-
+        if (Gdx.input.isKeyPressed(Input.Keys.O)) {
+            Camera.cameraZoomFactor += 2f * Gdx.graphics.getDeltaTime();
+            Camera.camera.update();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.I)) {
+            Camera.cameraZoomFactor -= 2f * Gdx.graphics.getDeltaTime();
+            Camera.camera.update();
+        }
+        WorldRenderer.lightingType = Gdx.input.isKeyJustPressed(Input.Keys.F4) ? LightingType.MODERN : WorldRenderer.lightingType; // shader lighting (not made yet)
+        WorldRenderer.lightingType = Gdx.input.isKeyJustPressed(Input.Keys.F5) ? LightingType.SPIKE : WorldRenderer.lightingType;  // spike algorithm per tile lighting
+        WorldRenderer.lightingType = Gdx.input.isKeyJustPressed(Input.Keys.F6) ? LightingType.FUTURE : WorldRenderer.lightingType; // precise culled lighting
+        WorldRenderer.lightingType = Gdx.input.isKeyJustPressed(Input.Keys.F7) ? LightingType.FULL_BRIGHT : WorldRenderer.lightingType; // no lighting (raw rendering)
     }
 
     public static void draw() {
+        // I hate this code
         Chunk chunk = WorldRenderer.getChunkFromSpacePosition(Camera.getCursorPositionInSpace());
         pointTile = (WorldRenderer.getTileFromSpacePosition(Camera.getCursorPositionInSpace()) != null) ? WorldRenderer.getTileFromSpacePosition(Camera.getCursorPositionInSpace()) : pointTile;
         NeighbourTile neighbourNorthTile = WorldTile.getBlockNeighbourTile(pointTile, new Vector2(0, 1));
@@ -34,7 +47,7 @@ public class DebugUI {
         NeighbourTile neighbourSouthTile = WorldTile.getBlockNeighbourTile(pointTile, new Vector2(0,-1));
         NeighbourTile neighbourWestTile  = WorldTile.getBlockNeighbourTile(pointTile, new Vector2(-1,0));
 
-        String debugText = String.join("",
+        String debugText = ""; /*String.join("",
                 "Mouse coordinates: " + Gdx.input.getX() + "," + Gdx.input.getY() + " - Space: " + Camera.getCursorPositionInSpace().x + "," + Camera.getCursorPositionInSpace().y + "\n",
                 "Hovered chunk: " + ((chunk != null) ? (chunk.getChunkPosition().toString()+" - Biome: "+ chunk.getChunkBiome().getBiomeName()) : "No chunk") + "\n",
                 "Hovered tile: " + ((pointTile != null && chunk != null) ? (
@@ -48,7 +61,7 @@ public class DebugUI {
                                 )
                 ) : "No tile") + "\n" +
                 "Needs tile processing: " + WorldRenderer.needsTileProcessing + "\n"
-                );
+                );*/
 
         if (chunk != null) {
             terrainShapeRenderer.setProjectionMatrix(Camera.camera.combined);
@@ -135,7 +148,7 @@ public class DebugUI {
         debugGlyphLayout.setText(debugFont, debugText);
         float w = debugGlyphLayout.width;
         debugFont.draw(debugUiBatch, debugText, Gdx.input.getX()+1.5f, Gdx.graphics.getHeight() - Gdx.input.getY() - 20-2.5f);
-        String fpsText = "RCPS: " + BatchRenderer.tilesBatch.renderCalls + " - FPS: " + Gdx.graphics.getFramesPerSecond();
+        String fpsText = "LIGHTING_TYPE: " + WorldRenderer.lightingType.toString() + " - CAMERA ZOOM: " + Camera.cameraZoomFactor + "x - RCPS: " + BatchRenderer.tilesBatch.renderCalls + " - FPS: " + Gdx.graphics.getFramesPerSecond();
 
         debugFont.draw(debugUiBatch, fpsText, Gdx.input.getX()+w-1.5f-new GlyphLayout(debugFont, fpsText).width, Gdx.graphics.getHeight() - Gdx.input.getY() - 2.5f);
 
