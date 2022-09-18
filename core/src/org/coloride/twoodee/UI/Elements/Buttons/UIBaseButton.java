@@ -1,12 +1,19 @@
 package org.coloride.twoodee.UI.Elements.Buttons;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
 import org.coloride.twoodee.UI.Elements.Enums.ButtonToggleType;
+import org.coloride.twoodee.UI.Elements.Interfaces.BaseButtonEvent;
 import org.coloride.twoodee.UI.Elements.UIElement;
 
-public class UIBaseButton extends UIElement {
+import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.List;
+
+public class UIBaseButton extends UIElement implements EventListener {
     // todo: support only left mouse/right mouse
+    public List<BaseButtonEvent> buttonEventListeners = new ArrayList<>();
     public Rectangle buttonBounds = new Rectangle();
     public ButtonToggleType buttonToggleType;
     public boolean toggled;
@@ -16,8 +23,12 @@ public class UIBaseButton extends UIElement {
 
     }
 
-    public void onToggle() {
+    public void addEventListener(BaseButtonEvent listener) {
+        buttonEventListeners.add(listener);
+    }
 
+    public void onToggle() {
+        for (BaseButtonEvent baseButtonEvent : buttonEventListeners) { baseButtonEvent.onToggle(); }
     }
 
     public void onClick() {
@@ -28,10 +39,12 @@ public class UIBaseButton extends UIElement {
             toggled = !toggled;
             onToggle();
         }
+
+        for (BaseButtonEvent baseButtonEvent : buttonEventListeners) { baseButtonEvent.onClick(); }
     }
 
     public void onHover() {
-
+        for (BaseButtonEvent baseButtonEvent : buttonEventListeners) { baseButtonEvent.onHover(); }
     }
 
     public void process() {
@@ -40,7 +53,7 @@ public class UIBaseButton extends UIElement {
         if (inBounds) {
             if (!hovered && inBounds) { onHover(); }
 
-            if (Gdx.input.isTouched()) {
+            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
                 onClick();
             }
         }

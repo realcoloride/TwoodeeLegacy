@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
+import jdk.nashorn.internal.runtime.Debug;
 import org.coloride.twoodee.Content.UI.DebugUI;
 import org.coloride.twoodee.Rendering.BatchRenderer;
 import org.coloride.twoodee.Rendering.Camera;
@@ -23,6 +24,7 @@ public class GameLogic {
 
         Camera.create();
         BoxLighting.create();
+        DebugUI.create();
     }
     public static void process() {
         BoxLighting.process();
