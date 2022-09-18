@@ -28,7 +28,7 @@ public class WorldRenderer extends Thread {
     private static Thread tilesProcessingThread = new WorldRenderer();
 
     public static ShapeRenderer shapeRenderer = new ShapeRenderer();
-    public static LightingType lightingType = LightingType.FUTURE;  //todo: fully operational (needs MODERN)
+    public static LightingType lightingType = LightingType.FULL_BRIGHT;  //todo: fully operational (needs MODERN)
 
     public static boolean needsTileProcessing = true;
 
