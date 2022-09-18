@@ -38,6 +38,7 @@ public class WorldTile {
         this.tilePosition = tilePosition;
         this.tileLight = new PointLight(BoxLighting.rayHandler, BoxLighting.tileLightRaysQuality, Color.WHITE,50,128,128);
         this.tileLight.setActive(false);
+        this.tileLight.setSoft(false);
     }
 
     public static NeighbourTile getBlockNeighbourTile(WorldTile tile, Vector2 neighbourPosition) {

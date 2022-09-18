@@ -18,7 +18,7 @@ public class BoxLighting {
     public static void create() {
         rayHandler.setCulling(true);
         rayHandler.setLightMapRendering(true);
-        rayHandler.renderOnly();
+        //rayHandler.renderOnly();
         //pointLight = new PointLight(rayHandler, 8, Color.WHITE,100,128,128);
     }
 

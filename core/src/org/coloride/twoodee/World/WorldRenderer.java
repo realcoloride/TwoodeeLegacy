@@ -113,7 +113,7 @@ public class WorldRenderer extends Thread {
                             boolean lightActive = false;
 
                             if (blockVisible) {
-                                AutoTiling.processAutoTile(tile);
+                                //AutoTiling.processAutoTile(tile);
 
                                 if (lightingType == LightingType.FUTURE) {
                                     if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
@@ -264,6 +264,8 @@ public class WorldRenderer extends Thread {
                 Chunk chunk = tile.getChunk();
 
                 //tile.getTileLight().setDistance(); todo
+
+                AutoTiling.processAutoTile(tile);
 
                 Sprite sprite = new Sprite(AutoTiling.getTextureRegionFromWorldTile(getRegionFromTexture(getTileTexture(tile.getTileId())), tile));
                 sprite.setPosition(chunk.getChunkPosition().x * Chunk.chunkSize.x + tile.getTilePosition().x * WorldTile.tileSize.x, chunk.getChunkPosition().y * Chunk.chunkSize.y + tile.getTilePosition().y * WorldTile.tileSize.y);
