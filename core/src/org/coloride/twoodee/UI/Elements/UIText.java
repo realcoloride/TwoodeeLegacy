@@ -1,33 +1,49 @@
 package org.coloride.twoodee.UI.Elements;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import org.coloride.twoodee.UI.Fonts.VCRFont;
 import org.coloride.twoodee.UI.UIFont;
 
 public class UIText extends UIElement {
     public String text;
     public UIFont uiFont;
     public BitmapFont bitmapFont;
-    public Color textColor;
-    public int textSize;
-
-    private FreeTypeFontGenerator.FreeTypeFontParameter fontParameter;
+    private Color textColor;
+    private int textSize;
+    private FreeTypeFontGenerator.FreeTypeFontParameter fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+    private FreeTypeFontGenerator fontGenerator;
 
     public void process() {
-        fontParameter.color = this.textColor;
-        fontParameter.size = this.textSize;
+        fontParameter.color = textColor;
+        fontParameter.size = textSize;
+        // todo: add those parameters
+        /*fontParameter.shadowColor
+        fontParameter.shadowOffsetX
+        fontParameter.shadowOffsetY
+        fontParameter.borderColor
+        fontParameter.borderStraight
+        fontParameter.padLeft
+        fontParameter.padRight
+        fontParameter.flip
+        fontParameter.padBottom
+        fontParameter.padTop*/
     }
 
     @Override
     public void draw() {
-        BitmapFont font = uiFont.getFont(fontParameter);
+        bitmapFont.draw(batch, text, uiPositionX, uiPositionY);
 
-        font.draw(batch, text, uiPositionX, uiPositionY);
         super.draw();
     }
 
+    public void generateNewBitmapFont() {
+        this.bitmapFont = fontGenerator.generateFont(fontParameter);
+    }
     public UIText(SpriteBatch batch, String text, UIFont uiFont, float x, float y, int textSize, Color textColor) {
         this.batch = batch;
 
@@ -38,8 +54,14 @@ public class UIText extends UIElement {
         this.textSize = textSize;
         this.textColor = textColor;
 
-        this.fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        this.fontParameter.size = textSize;
+        this.fontParameter.color = textColor;
+        this.fontGenerator = uiFont.getFontGenerator();
+        this.generateNewBitmapFont();
     }
 
-    public String getText() {return text;}
+    public void setUiFont(UIFont uiFont) {
+        this.fontGenerator = uiFont.getFontGenerator();
+        this.generateNewBitmapFont();
+    }
 }
