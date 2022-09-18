@@ -37,7 +37,7 @@ public class WorldRenderer extends Thread {
     private static Thread tilesProcessingThread = new WorldRenderer();
 
     public static ShapeRenderer shapeRenderer = new ShapeRenderer();
-    public static LightingType lightingType = LightingType.MODERN_LIGHTING;  //todo: fully operational (needs MODERN)
+    public static LightingType lightingType = LightingType.MODERN;  //todo: fully operational (needs MODERN)
 
     public static boolean needsTileProcessing = true;
 
@@ -91,11 +91,13 @@ public class WorldRenderer extends Thread {
                         if (blockVisible) {
                             AutoTiling.processAutoTile(tile);
 
-                            if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
-                                tile.getTileLight().setColor(TileType.getTileTypeById(tile.getTileId()).getLightColor());
-                                tile.getTileLight().setDistance(TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4);
-                                tile.getTileLight().setPosition(tileSpacePosition.x+WorldTile.tileSize.x/2,tileSpacePosition.y+WorldTile.tileSize.y/2);
-                                tile.getTileLight().setActive(true);
+                            if (lightingType == LightingType.FUTURE) {
+                                if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
+                                    tile.getTileLight().setColor(TileType.getTileTypeById(tile.getTileId()).getLightColor());
+                                    tile.getTileLight().setDistance(TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4);
+                                    tile.getTileLight().setPosition(tileSpacePosition.x+WorldTile.tileSize.x/2,tileSpacePosition.y+WorldTile.tileSize.y/2);
+                                    tile.getTileLight().setActive(true);
+                                }
                             }
 
                             if (tile.getTileId() != 0) { // AIR

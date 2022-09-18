@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.viewport.*;
 import org.coloride.twoodee.Utilities.MathUtilities;
 
 public class Camera {
-    public static float cameraZoomFactor = .4f;
+    public static float cameraZoomFactor = .8f;
     public static float cameraMinZoomFactor = .2f;
     public static float cameraMaxZoomFactor = .8f;
 

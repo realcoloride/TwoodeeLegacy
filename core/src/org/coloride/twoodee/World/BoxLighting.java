@@ -22,14 +22,14 @@ public class BoxLighting {
     }
 
     public static void process() {
-        if (WorldRenderer.lightingType == LightingType.MODERN_LIGHTING) {
+        if (WorldRenderer.lightingType == LightingType.FUTURE) {
             ambient = Camera.camera.position.y * 1 / (Chunk.chunkSize.y * MapInformation.mapSizes.get(MapInformation.getLoadedMap().getMapSize()).y);
             rayHandler.setAmbientLight(ambient);
         }
     }
 
     public static void update() {
-        if (WorldRenderer.lightingType == LightingType.MODERN_LIGHTING) {
+        if (WorldRenderer.lightingType == LightingType.FUTURE) {
             rayHandler.setCombinedMatrix(Camera.camera);
             rayHandler.updateAndRender();
         }
