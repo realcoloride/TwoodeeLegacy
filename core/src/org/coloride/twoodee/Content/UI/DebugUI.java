@@ -62,14 +62,14 @@ public class DebugUI {
         debugImage.uiPositionX = Gdx.input.getX();
         debugImage.uiPositionY = Gdx.graphics.getHeight()-Gdx.input.getY()-512;
 
-        debugImage.process();
+        //debugImage.process();
         debugText.process();
         debugButton.process();
         debugCheckBox.process();
     }
     public static void draw() {
         BatchRenderer.debugUiBatch.begin();
-        debugImage.draw();
+        //debugImage.draw();
         debugText.draw();
         debugButton.draw();
         debugCheckBox.draw();
