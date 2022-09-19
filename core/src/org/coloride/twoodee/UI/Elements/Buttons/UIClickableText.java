@@ -11,9 +11,6 @@ public class UIClickableText extends UIBaseButton {
     public UIText uiText;
     public Color hoveredColor;
 
-    private static ShapeRenderer shapeRenderer = new ShapeRenderer();
-    private Color lastColor;
-
     public void process() {
         buttonBounds.width = uiText.glyphLayout.width * uiScaleX;
         buttonBounds.height = uiText.glyphLayout.height * uiScaleY;
@@ -27,7 +24,9 @@ public class UIClickableText extends UIBaseButton {
     }
 
     public void draw() {
-        super.draw();
+        if (!hidden)
+            super.draw();
+
         uiText.draw();
     }
 

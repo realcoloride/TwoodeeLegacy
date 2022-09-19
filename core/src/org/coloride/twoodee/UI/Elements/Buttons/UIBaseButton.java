@@ -32,14 +32,6 @@ public class UIBaseButton extends UIElement implements EventListener {
     }
 
     public void onClick() {
-        /*if (buttonToggleType == ButtonToggleType.CLICKABLE) {
-
-        }*/
-        if (buttonToggleType == ButtonToggleType.TOGGABLE) {
-            toggled = !toggled;
-            onToggle();
-        }
-
         for (BaseButtonEvent baseButtonEvent : buttonEventListeners) { baseButtonEvent.onClick(); }
     }
 
@@ -48,12 +40,16 @@ public class UIBaseButton extends UIElement implements EventListener {
     }
 
     public void process() {
-        boolean inBounds = buttonBounds.contains(Gdx.input.getX(), 720-Gdx.input.getY());
+        boolean inBounds = buttonBounds.contains(Gdx.input.getX(), Gdx.graphics.getHeight()-Gdx.input.getY());
 
         if (inBounds) {
             if (!hovered && inBounds) { onHover(); }
 
             if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                if (buttonToggleType == ButtonToggleType.TOGGLEABLE) {
+                    toggled = !toggled;
+                    onToggle();
+                }
                 onClick();
             }
         }

@@ -1,4 +1,9 @@
 package org.coloride.twoodee.UI.Elements.Buttons;
 
-public class UISlider {
+import org.coloride.twoodee.UI.Elements.UIElement;
+
+public class UISlider extends UIElement {
+    public UISlider() {
+
+    }
 }

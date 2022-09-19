@@ -12,6 +12,7 @@ public class UIElement implements Disposable {
     public float uiPositionY = 0;
     public float uiScaleX = 1;
     public float uiScaleY = 1;
+    public boolean hidden = false;
     public SpriteBatch batch;
 
     public void create() {

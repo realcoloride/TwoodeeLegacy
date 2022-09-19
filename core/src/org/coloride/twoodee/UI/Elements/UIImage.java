@@ -19,7 +19,10 @@ public class UIImage extends UIElement {
     }
 
     public void draw() {
-        batch.draw(image, uiPositionX, uiPositionY, imageWidth * uiScaleX, imageHeight * uiScaleY);
+        if (!hidden)
+            batch.draw(image, uiPositionX, uiPositionY, imageWidth * uiScaleX, imageHeight * uiScaleY);
+
+        super.draw();
     }
 
     public UIImage(SpriteBatch batch, Texture texture, float x, float y, Color imageColor, float imageWidth, float imageHeight) {
@@ -58,15 +61,19 @@ public class UIImage extends UIElement {
         this(batch,new Texture(Gdx.files.internal("img/ui/other/ui_image_fallback.png")),x,y);
     }
 
-    public void setImage(Texture texture) {
-        imageWidth = texture.getWidth();
-        imageHeight = texture.getWidth();
+    public Texture getTexture() {
+        return this.image.getTexture();
+    }
+    public Sprite getSprite() {
+        return this.image;
+    }
+    // todo: set image with a forced width/height
+    public void setImage(Texture texture, float imageWidth, float imageHeight) {
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
         image.set(new Sprite(texture));
     }
-    public void setImage(FileHandle imagePath) {
-        Texture texture = new Texture(imagePath);
-        imageWidth = texture.getWidth();
-        imageHeight = texture.getHeight();
-        image.set(new Sprite(texture));
+    public void setImage(Texture texture) {
+        this.setImage(texture, imageWidth, imageHeight);
     }
 }

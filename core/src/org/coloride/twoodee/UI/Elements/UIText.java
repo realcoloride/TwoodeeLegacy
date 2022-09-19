@@ -38,7 +38,8 @@ public class UIText extends UIElement {
 
     @Override
     public void draw() {
-        bitmapFont.draw(batch, text, uiPositionX, uiPositionY);
+        if (!hidden)
+            bitmapFont.draw(batch, text, uiPositionX, uiPositionY);
 
         super.draw();
     }
