@@ -1,10 +1,12 @@
 # TwoodeeLegacy
 Public codebase for Twoodee, an abandoned tile based engine in LibGDX and Java.
+
 ![java_skvUHQW44f](https://user-images.githubusercontent.com/108619637/191604056-4b17359f-5168-4352-b870-b8a15eb43a44.png)
 
 # Context
 I orignallly made a project called "Terraria Clone" in order to learn LibGDX more and to learn how to handle a terraria based lighting.
 I ended up by making an dedicated algorithm for it and it ended up like this:
+
 ![image](https://user-images.githubusercontent.com/108619637/191603574-0089b5b8-6ed8-49b7-9d8a-7027561b8754.png)
 
 The code was good enough but was just a simple experiment. This project, called Twoodee (because of a lack of imagination) was an upgraded version but with bigger plans like networking, chunk based rendering, and other stuff.
