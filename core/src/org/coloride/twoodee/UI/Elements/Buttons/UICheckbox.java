@@ -8,21 +8,23 @@ import org.coloride.twoodee.UI.Elements.Enums.ButtonToggleType;
 import org.coloride.twoodee.UI.Elements.UIImage;
 
 public class UICheckbox extends UIBaseButton {
-    private static Texture untickedTexture = new Texture(Gdx.files.internal("img/ui/checkbox/unticked.png"));
-    private static Texture tickedTexture = new Texture(Gdx.files.internal("img/ui/checkbox/ticked.png"));
-    private static Texture disableTexture = new Texture(Gdx.files.internal("img/ui/checkbox/disabled.png"));
-    private static float defaultCheckboxSizeX = 32f;
-    private static float defaultCheckboxSizeY = 32f;
+    final static Texture untickedTexture = new Texture(Gdx.files.internal("img/ui/checkbox/unticked.png"));
+    final static Texture tickedTexture = new Texture(Gdx.files.internal("img/ui/checkbox/ticked.png"));
+    final static Texture disableTexture = new Texture(Gdx.files.internal("img/ui/checkbox/disabled.png"));
+    final static float defaultCheckboxSizeX = 32f;
+    final static float defaultCheckboxSizeY = 32f;
 
     public UIImage checkboxImage;
 
     public void process() {
-        buttonBounds.width = checkboxImage.imageWidth * uiScaleX;
-        buttonBounds.height = checkboxImage.imageHeight * uiScaleY;
-        buttonBounds.x = checkboxImage.uiPositionX;
-        buttonBounds.y = checkboxImage.uiPositionY;
+        checkboxImage.process();
 
-        if (buttonToggleType == ButtonToggleType.TOGGLEABLE) {
+        uiBounds.width = checkboxImage.imageWidth * uiScaleX;
+        uiBounds.height = checkboxImage.imageHeight * uiScaleY;
+        uiBounds.x = checkboxImage.uiPositionX;
+        uiBounds.y = checkboxImage.uiPositionY;
+
+        if (buttonToggleType == ButtonToggleType.TOGGLEABLE && !hidden) {
             if (toggled) {
                 // avoid memory leaks
                 if (checkboxImage.getTexture() != tickedTexture) {
@@ -39,7 +41,7 @@ public class UICheckbox extends UIBaseButton {
                 checkboxImage.setImage(disableTexture);
             }
         }
-        checkboxImage.process();
+
         super.process();
     }
     public void draw() {

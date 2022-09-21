@@ -2,6 +2,7 @@ package org.coloride.twoodee.Rendering;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import org.coloride.twoodee.World.WorldRenderer;
 
 public class CameraRenderer {
     enum CameraType {

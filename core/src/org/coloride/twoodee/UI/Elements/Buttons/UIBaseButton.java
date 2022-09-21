@@ -3,24 +3,24 @@ package org.coloride.twoodee.UI.Elements.Buttons;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import org.coloride.twoodee.UI.Elements.Enums.ButtonToggleType;
 import org.coloride.twoodee.UI.Elements.Interfaces.BaseButtonEvent;
 import org.coloride.twoodee.UI.Elements.UIElement;
 
 import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.List;
 
 public class UIBaseButton extends UIElement implements EventListener {
     // todo: support only left mouse/right mouse
-    public List<BaseButtonEvent> buttonEventListeners = new ArrayList<>();
-    public Rectangle buttonBounds = new Rectangle();
+    public ArrayList<BaseButtonEvent> buttonEventListeners = new ArrayList<>();
     public ButtonToggleType buttonToggleType;
     public boolean toggled;
+    public boolean useRightClick = false;
     public boolean hovered = false;
 
     public UIBaseButton() {
-
+        super();
     }
 
     public void addEventListener(BaseButtonEvent listener) {
@@ -40,12 +40,13 @@ public class UIBaseButton extends UIElement implements EventListener {
     }
 
     public void process() {
-        boolean inBounds = buttonBounds.contains(Gdx.input.getX(), Gdx.graphics.getHeight()-Gdx.input.getY());
+        boolean inBounds = uiBounds.contains(Gdx.input.getX(), Gdx.graphics.getHeight()-Gdx.input.getY());
 
-        if (inBounds) {
+        if (inBounds && !hidden) {
             if (!hovered && inBounds) { onHover(); }
+            int button = useRightClick ? Input.Buttons.RIGHT : Input.Buttons.LEFT;
 
-            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            if (Gdx.input.isButtonJustPressed(button)) {
                 if (buttonToggleType == ButtonToggleType.TOGGLEABLE) {
                     toggled = !toggled;
                     onToggle();
@@ -53,6 +54,7 @@ public class UIBaseButton extends UIElement implements EventListener {
                 onClick();
             }
         }
+
         hovered = inBounds;
     }
 }

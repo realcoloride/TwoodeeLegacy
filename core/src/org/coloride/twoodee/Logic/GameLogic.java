@@ -29,11 +29,9 @@ public class GameLogic {
     public static void process() {
         BoxLighting.process();
         BatchRenderer.process();
-        DebugUI.process();
     }
     public static void update() {
         BatchRenderer.draw();
-        DebugUI.draw();
     }
     public static void dispose() {
 

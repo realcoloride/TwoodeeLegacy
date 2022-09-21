@@ -1,10 +1,12 @@
 package org.coloride.twoodee.World;
 
+import box2dLight.PointLight;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -28,7 +30,7 @@ public class WorldRenderer extends Thread {
     private static Thread tilesProcessingThread = new WorldRenderer();
 
     public static ShapeRenderer shapeRenderer = new ShapeRenderer();
-    public static LightingType lightingType = LightingType.FULL_BRIGHT;  //todo: fully operational (needs MODERN)
+    public static LightingType lightingType = LightingType.SPIKE;  //todo: fully operational (needs MODERN)
 
     public static boolean needsTileProcessing = true;
 
@@ -72,7 +74,6 @@ public class WorldRenderer extends Thread {
                 chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
 
                 if (chunkVisible) {
-                    //System.out.println(chunkPosition);
                     if (lightingType == LightingType.SPIKE)
                         TileLighting.chunkRefreshBuffer.add(chunk);
                     int minTileX = MathUtils.floor(cameraPositionX/WorldTile.tileSize.x); // drawing anchor point (x)
@@ -99,16 +100,29 @@ public class WorldRenderer extends Thread {
                             blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
 
                             tile = chunk.getTileFromChunk(tilePosition);
+                            PointLight light = tile.getTileLight();
                             boolean lightActive = false;
 
                             if (blockVisible) {
-                                AutoTiling.addTileToAutoTileBuffer(tile);
+                                AutoTiling.autoTileBuffer.add(tile);
 
                                 if (lightingType == LightingType.FUTURE) {
                                     if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
-                                        tile.getTileLight().setColor(TileType.getTileTypeById(tile.getTileId()).getLightColor());
-                                        tile.getTileLight().setDistance(TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4);
-                                        tile.getTileLight().setPosition(tileSpacePosition.x+WorldTile.tileSize.x/2,tileSpacePosition.y+WorldTile.tileSize.y/2);
+                                        Color color = TileType.getTileTypeById(tile.getTileId()).getLightColor();
+                                        if (light.getColor() != color)
+                                            light.setColor(color);
+
+                                        float distance = TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4;
+                                        if (light.getDistance() != distance)
+                                            light.setDistance(distance);
+
+                                        float lightX = tileSpacePosition.x+WorldTile.tileSize.x/2;
+                                        float lightY = tileSpacePosition.y+WorldTile.tileSize.y/2;
+                                        Vector2 lightPosition = light.getPosition();
+
+                                        if (lightPosition.x != lightX || lightPosition.y != lightY)
+                                            light.setPosition(lightX,lightY);
+
                                         lightActive = true;
                                     }
                                 }
@@ -117,7 +131,10 @@ public class WorldRenderer extends Thread {
                                     renderedTilesBuffer.add(tile);
                                 }
                             }
-                            tile.getTileLight().setActive(lightActive);
+
+                            if (!light.isActive() && lightActive) {
+                                light.setActive(true);
+                            }
                         }
                     }
                 }
@@ -246,17 +263,31 @@ public class WorldRenderer extends Thread {
         Camera.draw();
 
         // Draw terrain
+
         tilesBatch.begin();
 
+        float tileX;
+        float tileY;
+
         if (renderedTilesBuffer.size() > 0) {
-            for (int i = 0; i < renderedTilesBuffer.size(); i++) {
+            int bufferSize = renderedTilesBuffer.size();
+            for (int i = 0; i < bufferSize; i++) {
                 WorldTile tile = renderedTilesBuffer.get(i);
                 Chunk chunk = tile.getChunk();
+                TextureRegion textureRegion = AutoTiling.getTextureRegionFromWorldTile(getRegionFromTexture(getTileTexture(tile.getTileId())), tile);
+                tileX = chunk.getChunkPosition().x * Chunk.chunkSize.x + tile.getTilePosition().x * WorldTile.tileSize.x;
+                tileY = chunk.getChunkPosition().y * Chunk.chunkSize.y + tile.getTilePosition().y * WorldTile.tileSize.y;
 
-                Sprite sprite = new Sprite(AutoTiling.getTextureRegionFromWorldTile(getRegionFromTexture(getTileTexture(tile.getTileId())), tile));
-                sprite.setPosition(chunk.getChunkPosition().x * Chunk.chunkSize.x + tile.getTilePosition().x * WorldTile.tileSize.x, chunk.getChunkPosition().y * Chunk.chunkSize.y + tile.getTilePosition().y * WorldTile.tileSize.y);
-                sprite.setColor(getTileColorFromLight(tile));
-                sprite.draw(tilesBatch);
+                if (lightingType == LightingType.SPIKE) {
+                    Color tileColor = getTileColorFromLight(tile);
+
+                    if (tileColor.a > 0) {
+                        tilesBatch.setColor(getTileColorFromLight(tile));
+                        tilesBatch.draw(textureRegion, tileX, tileY);
+                    }
+                } else {
+                    tilesBatch.draw(textureRegion, tileX, tileY);
+                }
             }
             renderedTilesBuffer.clear();
         }

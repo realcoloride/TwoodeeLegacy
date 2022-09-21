@@ -51,11 +51,6 @@ public class AutoTiling extends Thread {
     public static boolean areTilesTheSameId(WorldTile tile, NeighbourTile neighbourTile) {
         return neighbourTile.getTile() != null ? tile.getTileId() == neighbourTile.getTile().getTileId() : false;
     }
-
-    public static void addTileToAutoTileBuffer(WorldTile tile) {
-        autoTileBuffer.add(tile);
-    }
-
     public static void processAutoTile(WorldTile tile) {
         if (tile.needsTileOrientationRefreshing()) {
             Vector2 direction = new Vector2(0,1);

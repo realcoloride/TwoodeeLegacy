@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
-import org.coloride.twoodee.Content.UI.Cursor.UICursor;
 import org.coloride.twoodee.Logic.GameLogic;
 import org.coloride.twoodee.World.WorldRenderer;
 
@@ -16,7 +15,6 @@ public class Game extends ApplicationAdapter {
 	public void create () {
 		WorldRenderer.loadTilesTextures();
 		GameLogic.onLoad();
-		UICursor.create();
 		//Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 	}
 

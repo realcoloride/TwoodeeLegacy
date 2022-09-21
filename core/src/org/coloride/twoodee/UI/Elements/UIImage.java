@@ -15,6 +15,11 @@ public class UIImage extends UIElement {
     public Color imageColor;
 
     public void process() {
+        uiBounds.x = uiPositionX;
+        uiBounds.y = uiPositionY;
+        uiBounds.width = imageWidth * uiScaleX;
+        uiBounds.height = imageHeight * uiScaleY;
+
         image.setColor(imageColor);
     }
 
@@ -35,13 +40,7 @@ public class UIImage extends UIElement {
         this.imageHeight = imageHeight;
     }
     public UIImage(SpriteBatch batch, FileHandle imagePath, float x, float y, Color imageColor, float imageWidth, float imageHeight) {
-        this.batch = batch;
-        this.image = new Sprite(new Texture(imagePath));
-        this.uiPositionX = x;
-        this.uiPositionY = y;
-        this.imageColor = imageColor;
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
+        this(batch, new Texture(imagePath), x, y, imageColor, imageWidth, imageHeight);
     }
     public UIImage(SpriteBatch batch, Texture texture, float x, float y, Color imageColor) {
         this(batch, texture, x, y, imageColor, texture.getWidth(), texture.getHeight());

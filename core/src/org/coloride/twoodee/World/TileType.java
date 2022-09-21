@@ -10,14 +10,14 @@ public enum TileType {
             -2,
             "Counting block",
             false,
-            15,
+            4,
             ColorUtilities.Conversion.RGBtoraw(255,244,191,200)
     ),
     DEBUG_BLOCK(
             -1,
             "Debug block",
             false,
-            3,
+            0,
             ColorUtilities.Conversion.RGBtoraw(0,0,20,200)
     ),
     AIR(

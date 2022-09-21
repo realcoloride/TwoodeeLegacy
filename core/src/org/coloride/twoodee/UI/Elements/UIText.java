@@ -48,6 +48,7 @@ public class UIText extends UIElement {
         this.bitmapFont = fontGenerator.generateFont(fontParameter);
     }
     public UIText(SpriteBatch batch, String text, UIFont uiFont, float x, float y, int textSize, Color textColor) {
+        super();
         this.batch = batch;
 
         this.uiFont = uiFont;

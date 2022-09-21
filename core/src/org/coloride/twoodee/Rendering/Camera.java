@@ -17,8 +17,6 @@ public class Camera {
     public static OrthographicCamera camera;
     public static Viewport viewport;
 
-    public static float viewportRenderDistance = 0.1f;
-
     public static void setCameraType(CameraRenderer.CameraType cameraType) {
         CameraRenderer.currentCameraType = cameraType;
     }

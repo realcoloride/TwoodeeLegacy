@@ -12,12 +12,13 @@ public class UIClickableText extends UIBaseButton {
     public Color hoveredColor;
 
     public void process() {
-        buttonBounds.width = uiText.glyphLayout.width * uiScaleX;
-        buttonBounds.height = uiText.glyphLayout.height * uiScaleY;
-        buttonBounds.x = uiText.uiPositionX;
-        buttonBounds.y = uiText.uiPositionY - buttonBounds.height;
-
         uiText.process();
+
+        uiBounds.width = uiText.glyphLayout.width * uiScaleX;
+        uiBounds.height = uiText.glyphLayout.height * uiScaleY;
+        uiBounds.x = uiText.uiPositionX;
+        uiBounds.y = uiText.uiPositionY - uiBounds.height;
+
         uiText.bitmapFont.setColor(hovered ? hoveredColor : uiText.textColor);
 
         super.process();
