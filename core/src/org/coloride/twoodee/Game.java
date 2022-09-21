@@ -10,6 +10,9 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import org.coloride.twoodee.Logic.GameLogic;
 import org.coloride.twoodee.World.WorldRenderer;
 
+import static org.coloride.twoodee.Rendering.Camera.camera;
+import static org.coloride.twoodee.Rendering.Camera.viewport;
+
 public class Game extends ApplicationAdapter {
 	@Override
 	public void create () {
@@ -22,6 +25,14 @@ public class Game extends ApplicationAdapter {
 	public void render () {
 		GameLogic.process();
 		GameLogic.update();
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		if (camera != null && viewport != null) {
+			viewport.update(width, height);
+			camera.update();
+		}
 	}
 	
 	@Override

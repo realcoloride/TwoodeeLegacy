@@ -10,9 +10,9 @@ import com.badlogic.gdx.utils.viewport.*;
 import org.coloride.twoodee.Utilities.MathUtilities;
 
 public class Camera {
-    public static float cameraZoomFactor = .8f;
+    public static float cameraZoomFactor = 1f;
     public static float cameraMinZoomFactor = .2f;
-    public static float cameraMaxZoomFactor = .8f;
+    public static float cameraMaxZoomFactor = 1f;
 
     public static OrthographicCamera camera;
     public static Viewport viewport;
@@ -29,6 +29,7 @@ public class Camera {
     public static void create() {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1280, 720);
+        viewport = new FitViewport(1280,720,camera);
         camera.update();
     }
 

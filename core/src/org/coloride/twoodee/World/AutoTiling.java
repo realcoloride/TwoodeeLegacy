@@ -52,7 +52,8 @@ public class AutoTiling extends Thread {
         return neighbourTile.getTile() != null ? tile.getTileId() == neighbourTile.getTile().getTileId() : false;
     }
     public static void processAutoTile(WorldTile tile) {
-        if (tile.needsTileOrientationRefreshing()) {
+        if (tile.needsTileOrientationRefreshing() && !tile.tileOrientationProcessing) {
+            tile.tileOrientationProcessing = true;
             Vector2 direction = new Vector2(0,1);
 
             direction.set(0,1);
@@ -72,6 +73,7 @@ public class AutoTiling extends Thread {
             orientation += areTilesTheSameId(tile, neighbourWestTile) ? westOrientation : 0;
 
             tile.tileOrientation = orientation;
+            tile.tileOrientationProcessing = false;
             autoTileBuffer.remove(tile);
         }
     }

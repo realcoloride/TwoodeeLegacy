@@ -3,6 +3,7 @@ package org.coloride.twoodee.World;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import org.coloride.twoodee.Rendering.Camera;
 import org.coloride.twoodee.Utilities.MathUtilities;
 
 import javax.rmi.ssl.SslRMIClientSocketFactory;
@@ -38,45 +39,58 @@ public class TileLighting extends Thread {
 
     public static void addChunkToRefreshLightBuffer(Chunk chunk) { chunkRefreshBuffer.add(chunk); }
     public static void refreshChunkLightInfluence(Chunk chunk) {
-        Vector2 tilePosition;
-        for (int x = 0; x < Chunk.chunkSize.x/WorldTile.tileSize.x; x++) {
-            for (int y = 0; y < Chunk.chunkSize.y/WorldTile.tileSize.y; y++) {
-                tilePosition = new Vector2(x,y);
-                WorldTile tile = chunk.getTileFromChunk(tilePosition);
+        if (chunk.requiresUpdate) {
+            Vector2 tilePosition;
+            float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
+            float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
 
-                // Get the current light intensity, if the light intensity is null, get the light intensity by its influence
-                Integer lightIntensity = tile.getlightIntensity() == null ? TileType.getTileTypeById(tile.getTileId()).getLightInfluence() : tile.getlightIntensity();
+            int minTileX = MathUtils.floor(cameraPositionX/WorldTile.tileSize.x); // drawing anchor point (x)
+            int minTileY = MathUtils.floor(cameraPositionY/WorldTile.tileSize.y); // drawing anchor point (y)
+            int maxTileX = MathUtils.ceil(Camera.camera.viewportWidth/WorldTile.tileSize.x); // tile render amount (x)
+            int maxTileY = MathUtils.ceil(Camera.camera.viewportHeight/WorldTile.tileSize.y); // tile render amount (y)
 
-                // Get all neighbouring tiles
-                NeighbourTile neighbourNorthTile = WorldTile.getBlockNeighbourTile(tile, new Vector2(0, 1));
-                NeighbourTile neighbourEastTile  = WorldTile.getBlockNeighbourTile(tile, new Vector2(1,0));
-                NeighbourTile neighbourSouthTile = WorldTile.getBlockNeighbourTile(tile, new Vector2(0,-1));
-                NeighbourTile neighbourWestTile  = WorldTile.getBlockNeighbourTile(tile, new Vector2(-1,0));
+            float tileIterationsX = MathUtils.clamp(minTileX + maxTileX, 0, Chunk.chunkSize.x / WorldTile.tileSize.x);
+            float tileIterationsY = MathUtils.clamp(minTileY + maxTileY, 0, Chunk.chunkSize.y / WorldTile.tileSize.y);
 
-                // If the neighbours exists, add the influence
+            for (int x = 0; x < tileIterationsX; x++) {
+                for (int y = 0; y < tileIterationsY; y++) {
+                    tilePosition = new Vector2(x,y);
+                    WorldTile tile = chunk.getTileFromChunk(tilePosition);
 
-                Integer leftTileInfluence  =  neighbourEastTile.getTile() != null ?  neighbourEastTile.getTile().getlightIntensity() : null;
-                Integer rightTileInfluence =  neighbourWestTile.getTile() != null ?  neighbourWestTile.getTile().getlightIntensity() : null;
-                Integer upTileInfluence    = neighbourNorthTile.getTile() != null ? neighbourNorthTile.getTile().getlightIntensity() : null;
-                Integer downTileInfluence  = neighbourSouthTile.getTile() != null ? neighbourSouthTile.getTile().getlightIntensity() : null;
+                    // Get the current light intensity, if the light intensity is null, get the light intensity by its influence
+                    Integer lightIntensity = tile.getlightIntensity() == null ? TileType.getTileTypeById(tile.getTileId()).getLightInfluence() : tile.getlightIntensity();
 
-                int[] influences = new int[5];
+                    // Get all neighbouring tiles
+                    NeighbourTile neighbourNorthTile = WorldTile.getBlockNeighbourTile(tile, new Vector2(0, 1));
+                    NeighbourTile neighbourEastTile  = WorldTile.getBlockNeighbourTile(tile, new Vector2(1,0));
+                    NeighbourTile neighbourSouthTile = WorldTile.getBlockNeighbourTile(tile, new Vector2(0,-1));
+                    NeighbourTile neighbourWestTile  = WorldTile.getBlockNeighbourTile(tile, new Vector2(-1,0));
 
-                if (leftTileInfluence != null) influences[0]=leftTileInfluence;
-                if (rightTileInfluence != null) influences[1]=rightTileInfluence;
-                if (upTileInfluence != null) influences[2]=upTileInfluence;
-                if (downTileInfluence != null) influences[3]=downTileInfluence;
+                    // If the neighbours exists, add the influence
 
-                int biggestInfluence = lightIntensity;
+                    Integer leftTileInfluence  =  neighbourEastTile.getTile() != null ?  neighbourEastTile.getTile().getlightIntensity() : null;
+                    Integer rightTileInfluence =  neighbourWestTile.getTile() != null ?  neighbourWestTile.getTile().getlightIntensity() : null;
+                    Integer upTileInfluence    = neighbourNorthTile.getTile() != null ? neighbourNorthTile.getTile().getlightIntensity() : null;
+                    Integer downTileInfluence  = neighbourSouthTile.getTile() != null ? neighbourSouthTile.getTile().getlightIntensity() : null;
 
-                for (int i = 0; i < influences.length; i++) {
-                    if (influences[i] > biggestInfluence) {
-                        biggestInfluence = influences[i]-1;
+                    int[] influences = new int[5];
+
+                    if (leftTileInfluence != null) influences[0]=leftTileInfluence;
+                    if (rightTileInfluence != null) influences[1]=rightTileInfluence;
+                    if (upTileInfluence != null) influences[2]=upTileInfluence;
+                    if (downTileInfluence != null) influences[3]=downTileInfluence;
+
+                    int biggestInfluence = lightIntensity;
+
+                    for (int i = 0; i < influences.length; i++) {
+                        if (influences[i] > biggestInfluence) {
+                            biggestInfluence = influences[i]-1;
+                        }
                     }
-                }
 
-                lightIntensity = MathUtils.clamp(biggestInfluence, 0, 15);
-                tile.lightIntensity = lightIntensity;
+                    lightIntensity = MathUtils.clamp(biggestInfluence, 0, 15);
+                    tile.lightIntensity = lightIntensity;
+                }
             }
         }
     }

@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import org.coloride.twoodee.Rendering.BatchRenderer;
 import org.coloride.twoodee.Rendering.Camera;
 import org.coloride.twoodee.UI.Elements.Buttons.UIBaseButton;
@@ -25,7 +27,7 @@ public class DebugUI {
     private static UIImage debugImage = new UIImage(BatchRenderer.debugUiBatch, Gdx.files.internal("img/ui/other/ui_image_fallback.png"), 0, 0, new Color(1,1,1,1), 512, 512);
     private static UIClickableText debugButton = new UIClickableText(BatchRenderer.debugUiBatch, ButtonToggleType.CLICKABLE, new UIText(BatchRenderer.debugUiBatch, "> click for tick <", new VCRFont(), 600, 128, 32, Color.WHITE), Color.YELLOW);
     private static UICheckbox debugCheckBox = new UICheckbox(BatchRenderer.debugUiBatch, 600, 168, 64, 64);
-    private static UIBaseSlider slider = new UIBaseSlider(BatchRenderer.debugUiBatch, 10, 200, 0, .6f, 0.01f, 100, 64);
+    private static UIBaseSlider slider = new UIBaseSlider(BatchRenderer.debugUiBatch, 10, 200, 0, .6f, 0.001f, 200, 10);
 
     public static void create() {
         debugCheckBox.hidden = true;

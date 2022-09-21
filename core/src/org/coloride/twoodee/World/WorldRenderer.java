@@ -33,115 +33,132 @@ public class WorldRenderer extends Thread {
     public static LightingType lightingType = LightingType.SPIKE;  //todo: fully operational (needs MODERN)
 
     public static boolean needsTileProcessing = true;
+    public static boolean processingTiles = false;
 
     public void run() {
         // Chunk rendering
-        Vector2 chunkPosition = new Vector2();
-        BoundingBox chunkBounds;
-        Vector2 tilePosition;
-        Vector2 tileSpacePosition = new Vector2();
-        BoundingBox blockBounds;
-        boolean blockVisible;
-        boolean chunkVisible;
-        WorldTile tile;
+        if (!processingTiles) {
+            processingTiles = true;
 
-        Vector2 normalizedMapSize = MapInformation.mapSizes.get(MapInformation.getLoadedMap().getMapSize());
+            Vector2 chunkPosition = new Vector2();
+            BoundingBox chunkBounds;
+            Vector2 tilePosition;
+            Vector2 tileSpacePosition = new Vector2();
+            BoundingBox blockBounds;
+            boolean blockVisible;
+            boolean chunkVisible;
+            WorldTile tile;
 
-        float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
-        float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
+            Vector2 normalizedMapSize = MapInformation.mapSizes.get(MapInformation.getLoadedMap().getMapSize());
 
-        int minChunkX = MathUtils.floor(cameraPositionX/Chunk.chunkSize.x); // drawing anchor point (x)
-        int minChunkY = MathUtils.floor(cameraPositionY/Chunk.chunkSize.y); // drawing anchor point (y)
-        int maxChunkX = MathUtils.ceil(Camera.camera.viewportWidth/Chunk.chunkSize.x + 0.5f); // chunk render amount (x)
-        int maxChunkY = MathUtils.ceil(Camera.camera.viewportHeight/Chunk.chunkSize.y + 0.5f); // chunk render amount (y)
+            float cameraPositionX = (Camera.camera.position.x - Camera.camera.viewportWidth/2);
+            float cameraPositionY = (Camera.camera.position.y - Camera.camera.viewportHeight/2);
 
-        for (int cx = minChunkX; cx < MathUtils.clamp(minChunkX + maxChunkX, 0, normalizedMapSize.x); cx++) {
-            for (int cy = minChunkY; cy < MathUtils.clamp(minChunkY + maxChunkY, 0, normalizedMapSize.y); cy++) {
+            int minChunkX = MathUtils.floor(cameraPositionX/Chunk.chunkSize.x); // drawing anchor point (x)
+            int minChunkY = MathUtils.floor(cameraPositionY/Chunk.chunkSize.y); // drawing anchor point (y)
+            int maxChunkX = MathUtils.ceil(Camera.camera.viewportWidth/Chunk.chunkSize.x + 0.5f); // chunk render amount (x)
+            int maxChunkY = MathUtils.ceil(Camera.camera.viewportHeight/Chunk.chunkSize.y + 0.5f); // chunk render amount (y)
 
-                // if its below 0, put it back to 0 (avoid crash)
-                cx = cx < 0 ? 0 : cx;
-                cy = cy < 0 ? 0 : cy;
+            float chunkIterationsX = MathUtils.clamp(minChunkX + maxChunkX, 0, normalizedMapSize.x);
+            float chunkIterationsY = MathUtils.clamp(minChunkY + maxChunkY, 0, normalizedMapSize.y);
 
-                chunkPosition.set(cx,cy);
-                Chunk chunk = MapInformation.getLoadedMap().getChunks().get(chunkPosition);
+            int minTileX = MathUtils.floor(cameraPositionX/WorldTile.tileSize.x); // drawing anchor point (x)
+            int minTileY = MathUtils.floor(cameraPositionY/WorldTile.tileSize.y); // drawing anchor point (y)
+            int maxTileX = MathUtils.ceil(Camera.camera.viewportWidth/WorldTile.tileSize.x); // tile render amount (x)
+            int maxTileY = MathUtils.ceil(Camera.camera.viewportHeight/WorldTile.tileSize.y); // tile render amount (y)
 
-                chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                        cx * Chunk.chunkSize.x,
-                        cy * Chunk.chunkSize.y,
-                        cx * Chunk.chunkSize.x + Chunk.chunkSize.x,
-                        cy * Chunk.chunkSize.y + Chunk.chunkSize.y
-                );
-                chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
+            float tileIterationsX = MathUtils.clamp(minTileX + maxTileX, 0, Chunk.chunkSize.x / WorldTile.tileSize.x);
+            float tileIterationsY = MathUtils.clamp(minTileY + maxTileY, 0, Chunk.chunkSize.y / WorldTile.tileSize.y);
 
-                if (chunkVisible) {
-                    if (lightingType == LightingType.SPIKE)
-                        TileLighting.chunkRefreshBuffer.add(chunk);
-                    int minTileX = MathUtils.floor(cameraPositionX/WorldTile.tileSize.x); // drawing anchor point (x)
-                    int minTileY = MathUtils.floor(cameraPositionY/WorldTile.tileSize.y); // drawing anchor point (y)
-                    int maxTileX = MathUtils.ceil(Camera.camera.viewportWidth/WorldTile.tileSize.x); // tile render amount (x)
-                    int maxTileY = MathUtils.ceil(Camera.camera.viewportHeight/WorldTile.tileSize.y); // tile render amount (y)
+            HashMap<Vector2, Chunk> chunks = MapInformation.getLoadedMap().getChunks();
 
-                    for (int x = 0; x < MathUtils.clamp(minTileX + maxTileX, 0, Chunk.chunkSize.x / WorldTile.tileSize.x); x++) {
-                        for (int y = 0; y < MathUtils.clamp(minTileY + maxTileY, 0, Chunk.chunkSize.y / WorldTile.tileSize.y); y++) {
+            for (int cx = minChunkX; cx < chunkIterationsX; cx++) {
+                for (int cy = minChunkY; cy < chunkIterationsY; cy++) {
 
-                            // if its below 0, put it back to 0 (avoid crash)
-                            x = x < 0 ? 0 : x;
-                            y = y < 0 ? 0 : y;
+                    // if its below 0, put it back to 0 (avoid crash)
+                    cx = cx < 0 ? 0 : cx;
+                    cy = cy < 0 ? 0 : cy;
 
-                            tilePosition = new Vector2(x, y);
-                            tileSpacePosition.set(cx * Chunk.chunkSize.x + x * WorldTile.tileSize.x, cy * Chunk.chunkSize.y + y * WorldTile.tileSize.y);
+                    chunkPosition.set(cx,cy);
+                    Chunk chunk = chunks.get(chunkPosition);
 
-                            blockBounds = MathUtilities.Conversion.boundingBox2dTo3d(
-                                    tileSpacePosition.x,
-                                    tileSpacePosition.y,
-                                    tileSpacePosition.x + WorldTile.tileSize.x,
-                                    tileSpacePosition.y + WorldTile.tileSize.y
-                            );
-                            blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
+                    chunkBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                            cx * Chunk.chunkSize.x,
+                            cy * Chunk.chunkSize.y,
+                            cx * Chunk.chunkSize.x + Chunk.chunkSize.x,
+                            cy * Chunk.chunkSize.y + Chunk.chunkSize.y
+                    );
+                    chunkVisible = Camera.camera.frustum.boundsInFrustum(chunkBounds);
 
-                            tile = chunk.getTileFromChunk(tilePosition);
-                            PointLight light = tile.getTileLight();
-                            boolean lightActive = false;
+                    if (chunkVisible) {
+                        if (lightingType == LightingType.SPIKE)
+                            TileLighting.chunkRefreshBuffer.add(chunk);
 
-                            if (blockVisible) {
-                                AutoTiling.autoTileBuffer.add(tile);
+                        for (int x = 0; x < tileIterationsX; x++) {
+                            for (int y = 0; y < tileIterationsY; y++) {
 
-                                if (lightingType == LightingType.FUTURE) {
-                                    if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
-                                        Color color = TileType.getTileTypeById(tile.getTileId()).getLightColor();
-                                        if (light.getColor() != color)
-                                            light.setColor(color);
+                                // if its below 0, put it back to 0 (avoid crash)
+                                x = x < 0 ? 0 : x;
+                                y = y < 0 ? 0 : y;
 
-                                        float distance = TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4;
-                                        if (light.getDistance() != distance)
-                                            light.setDistance(distance);
+                                tilePosition = new Vector2(x, y);
+                                tileSpacePosition.set(cx * Chunk.chunkSize.x + x * WorldTile.tileSize.x, cy * Chunk.chunkSize.y + y * WorldTile.tileSize.y);
 
-                                        float lightX = tileSpacePosition.x+WorldTile.tileSize.x/2;
-                                        float lightY = tileSpacePosition.y+WorldTile.tileSize.y/2;
-                                        Vector2 lightPosition = light.getPosition();
+                                blockBounds = MathUtilities.Conversion.boundingBox2dTo3d(
+                                        tileSpacePosition.x,
+                                        tileSpacePosition.y,
+                                        tileSpacePosition.x + WorldTile.tileSize.x,
+                                        tileSpacePosition.y + WorldTile.tileSize.y
+                                );
+                                blockVisible = Camera.camera.frustum.boundsInFrustum(blockBounds);
 
-                                        if (lightPosition.x != lightX || lightPosition.y != lightY)
-                                            light.setPosition(lightX,lightY);
+                                tile = chunk.getTileFromChunk(tilePosition);
+                                PointLight light = tile.getTileLight();
+                                boolean lightActive = false;
 
-                                        lightActive = true;
+                                if (blockVisible) {
+                                    if (tile.needsTileOrientationRefreshing) {
+                                        AutoTiling.autoTileBuffer.add(tile);
+                                    }
+
+                                    if (lightingType == LightingType.FUTURE) {
+                                        if (TileType.getTileTypeById(tile.getTileId()).getLightInfluence() > 0) {
+                                            Color color = TileType.getTileTypeById(tile.getTileId()).getLightColor();
+                                            if (light.getColor() != color)
+                                                light.setColor(color);
+
+                                            float distance = TileType.getTileTypeById(tile.getTileId()).getLightInfluence()*4;
+                                            if (light.getDistance() != distance)
+                                                light.setDistance(distance);
+
+                                            float lightX = tileSpacePosition.x+WorldTile.tileSize.x/2;
+                                            float lightY = tileSpacePosition.y+WorldTile.tileSize.y/2;
+                                            Vector2 lightPosition = light.getPosition();
+
+                                            if (lightPosition.x != lightX || lightPosition.y != lightY)
+                                                light.setPosition(lightX,lightY);
+
+                                            lightActive = true;
+                                        }
+                                    }
+
+                                    if (tile.getTileId() != 0) { // AIR
+                                        renderedTilesBuffer.add(tile);
                                     }
                                 }
 
-                                if (tile.getTileId() != 0) { // AIR
-                                    renderedTilesBuffer.add(tile);
+                                if (!light.isActive() && lightActive) {
+                                    light.setActive(true);
                                 }
-                            }
-
-                            if (!light.isActive() && lightActive) {
-                                light.setActive(true);
                             }
                         }
                     }
                 }
             }
-        }
 
-        needsTileProcessing = false;
+            needsTileProcessing = false;
+            processingTiles = false;
+        }
     }
     public static void loadTilesTextures() {
         for (TileType tileType : TileType.values()) {
@@ -253,7 +270,7 @@ public class WorldRenderer extends Thread {
         if (WorldRenderer.lightingType == LightingType.SPIKE) {
             if (TileLighting.chunkRefreshBuffer.size() > 0 && !TileLighting.rendering) { lightProcessingThread.run(); }
         }
-        if (needsTileProcessing) { tilesProcessingThread.run(); }
+        if (needsTileProcessing && !processingTiles) { tilesProcessingThread.run(); }
         if (autoTileBuffer.size() > 0) { autoTilingThread.run(); }
     }
     public static void draw() {

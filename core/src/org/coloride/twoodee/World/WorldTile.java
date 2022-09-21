@@ -18,8 +18,7 @@ public class WorldTile {
     public Integer lightIntensity = null; // Needs rendering
     public int tileOrientation = 0;
     public boolean needsTileOrientationRefreshing = true;
-    public boolean overrideTileOrientation = false;
-
+    public boolean tileOrientationProcessing = false;
     public PointLight tileLight;
 
     public boolean hasTileBack = false;

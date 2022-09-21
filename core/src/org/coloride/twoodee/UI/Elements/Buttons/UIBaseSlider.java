@@ -60,10 +60,11 @@ public class UIBaseSlider extends UIElement implements EventListener {
     }
 
     public void process() {
+
+        uiBounds.width = (sliderWidth + (endTexture.getWidth() * uiScaleX)) * uiScaleX;
+        uiBounds.height = (sliderHeight * 2) * uiScaleY;
         uiBounds.x = (endTexture.getWidth() * uiScaleX)/2;
         uiBounds.y = uiPositionY;
-        uiBounds.width = (sliderWidth + (endTexture.getWidth() * uiScaleX)) * uiScaleX;
-        uiBounds.height = sliderTexture.getHeight() * uiScaleY;
 
         boolean inBounds = uiBounds.contains(Gdx.input.getX(), Gdx.graphics.getHeight()-Gdx.input.getY());
         if (!hovered && inBounds) { onHover(); }
@@ -76,22 +77,23 @@ public class UIBaseSlider extends UIElement implements EventListener {
                         ) / sliderStep
                 ) * sliderStep;
                 sliderValue = MathUtils.clamp((float)value, 0, sliderMaximum);
+                onValueChange();
             }
         }
 
         hovered = inBounds;
 
         beginSprite.setPosition(uiPositionX - sliderTexture.getWidth()/2 * uiScaleX, uiPositionY);
-        beginSprite.setSize(beginTexture.getWidth() * uiScaleX, beginTexture.getHeight() * uiScaleY);
+        beginSprite.setSize(beginTexture.getWidth() * uiScaleX, beginTexture.getHeight() + sliderHeight * uiScaleY);
 
         middleSprite.setPosition(uiPositionX - (sliderTexture.getWidth()*2 * uiScaleX) + (beginTexture.getWidth() + sliderTexture.getWidth()) * uiScaleX, uiPositionY);
-        middleSprite.setSize((sliderWidth + sliderTexture.getWidth()) * uiScaleX, middleTexture.getHeight() * uiScaleY);
+        middleSprite.setSize((sliderWidth + sliderTexture.getWidth()) * uiScaleX, middleTexture.getHeight() + sliderHeight * uiScaleY);
 
         endSprite.setPosition(uiPositionX + (sliderWidth + middleTexture.getWidth() + sliderTexture.getWidth()/2) * uiScaleX, uiPositionY);
-        endSprite.setSize(endTexture.getWidth() * uiScaleX, endTexture.getHeight() * uiScaleY);
+        endSprite.setSize(endTexture.getWidth() * uiScaleX, endTexture.getHeight() + sliderHeight * uiScaleY);
 
         sliderSprite.setPosition(uiPositionX + ((sliderValue * sliderWidth / sliderMaximum - sliderMinimum) * uiScaleX), uiPositionY);
-        sliderSprite.setSize(sliderTexture.getWidth() * uiScaleX, sliderTexture.getHeight() * uiScaleY);
+        sliderSprite.setSize(sliderTexture.getWidth() * uiScaleX, sliderTexture.getHeight() + sliderHeight * uiScaleY);
 
         super.process();
     }
